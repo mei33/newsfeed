@@ -1,29 +1,14 @@
-# newsfeed
+# News fetcher
 
-## Project setup
-```
-yarn install
-```
+## Basic usage
+1. Clone the repo to your machine: `git clone %url_to_this_repo%`.
+2. Install dependencies: `yarn install`.
+3. Run dev build: `yarn serve`;
 
-### Compiles and hot-reloads for development
-```
-yarn serve
-```
+Other commands can be found in `scripts` section in `package.json` file.
 
-### Compiles and minifies for production
-```
-yarn build
-```
-
-### Run your unit tests
-```
-yarn test:unit
-```
-
-### Lints and fixes files
-```
-yarn lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Growth points
+1. Consider to move to Vuetify v3(beta) to be able to use Vue 3.
+2. Consider store visited articles ids in localStorage.
+3. Consider add Vue Testing Library tests.
+4. Consider add Storybook.
