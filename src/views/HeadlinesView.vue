@@ -45,22 +45,19 @@
 
     <template v-if="visitedArticles.length">
       <h1 class="mb-1">Visited pages</h1>
-      <HeadlinesList :articles="articles" @nav-to="handleNavArticle" />
+      <HeadlinesList :articles="visitedArticles" @nav-to="handleNavArticle" />
     </template>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-
-import articlesMock from '@/store/articlesMock';
-import sourcesMock from '@/store/sourcesMock';
+import { mapActions } from 'vuex';
 
 import type { Article } from '@/types/Article';
 import type { Filters } from '@/types/Filters';
 import type { Source } from '@/types/Source';
 import HeadlinesList from '@/components/HeadlinesList/HeadlinesList.vue';
-import addIdsToArticles from '@/utils/addIdsToArticles';
 
 export default defineComponent({
   name: 'HeadlinesView',
@@ -71,15 +68,27 @@ export default defineComponent({
 
   data() {
     return {
-      articles: addIdsToArticles(articlesMock),
       isFiltersModalVisible: false,
-      sources: sourcesMock,
       sourcesSelected: [] as Array<Source['id']>,
       searchQueryInner: '',
     };
   },
 
   computed: {
+    articles(): Article[] {
+      return this.$store.state.articlesToRender;
+    },
+
+    articlesMap(): Record<Article['id'], Article> {
+      return this.articles.reduce<Record<Article['id'], Article>>((acc, cur) => {
+        if (cur.id) {
+          acc[cur.id] = cur;
+        }
+
+        return acc;
+      }, {});
+    },
+
     searchQuery: {
       get(): string {
         return this.searchQueryInner;
@@ -90,14 +99,22 @@ export default defineComponent({
       },
     },
 
+    sources(): Source[] {
+      return this.$store.state.sources;
+    },
+
     visitedArticles(): Article[] {
-      return this.articles;
+      return (this.$store.state.visitedArticlesIds as Array<Article['id']>).map(
+        (articleId) => this.articlesMap[articleId],
+      );
     },
   },
 
   methods: {
+    ...mapActions(['loadArticles', 'updateVisitedArticlesHistory', 'setFilters']),
+
     handleNavArticle(id: Article['id']) {
-      console.log('handleNavArticle', id);
+      this.updateVisitedArticlesHistory(id);
     },
 
     handleFiltersModalOpen() {
@@ -114,7 +131,7 @@ export default defineComponent({
         sourcesIds: this.sourcesSelected,
       };
 
-      console.log(filters);
+      this.setFilters(filters);
 
       this.isFiltersModalVisible = false;
     },

@@ -37,10 +37,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue';
+import { mapActions } from 'vuex';
+
 import ArticleDetails from '@/components/ArticleDetails/ArticleDetails.vue';
+import type { Article } from '@/types/Article';
 import getFormattedDate from '@/utils/getFormattedDate';
 import NavigationDrawer from '@/components/NavigationDrawer/NavigationDrawer.vue';
-import articlesMock from '@/store/articlesMock';
 
 export default defineComponent({
   name: 'ArticleDetailsView',
@@ -51,12 +53,18 @@ export default defineComponent({
   },
 
   methods: {
+    ...mapActions(['loadArticles', 'changeProperty', 'setErrorText']),
+
     changeTitleModalOpen() {
       this.isPropertyModalVisible = true;
     },
 
     changeTitle() {
-      console.log(this.titleEdited);
+      this.changeProperty({
+        id: this.id,
+        key: 'title',
+        value: this.titleEdited,
+      });
       this.isPropertyModalVisible = false;
     },
 
@@ -67,7 +75,6 @@ export default defineComponent({
     const maxTitleLength = 255;
 
     return {
-      article: { ...articlesMock[0], id: 42 },
       id: this.$route.params.id,
       isPropertyModalVisible: false,
       isPropertyFormValid: true,
@@ -80,6 +87,18 @@ export default defineComponent({
   },
 
   computed: {
+    article(): Article | undefined {
+      const article = (this.$store.state.articles as Article[]).find(
+        (articleItem) => articleItem.id === this.id,
+      );
+
+      if (!article) {
+        this.setErrorText(`Article with id ${this.id} is not found`);
+      }
+
+      return article;
+    },
+
     titleEdited: {
       get(): string {
         return (this.titleEditedInner || this.article?.title) ?? '';
